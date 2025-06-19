@@ -1,18 +1,17 @@
+
+import { Route,Routes } from"react-router-dom" ;
 import Home from "./Home";
 import Login from "./Login";
-import { Routes, Route } from "react-router-dom";
-import Dash from "./Dash";
+import AppLayout from "./layout/AppLayout" ;
 function App() {
-  return (
-    <>
-    <Routes>
-      <Route path="/" element={<Home />}/>
-      <Route path="/login" element={<Login />}/>
-      <Route path="/Dash" element={<Dash />}/>
+    const 
+return (
+<Routes>
 
-    </Routes>
-    </>
-  );
+<Route path="/" element={<AppLayout><Home/></AppLayout>}></Route>
+<Route path="/login" element={<AppLayout><Login/></AppLayout>}></Route>
+<Route path="/dashboard" element={<dashboard/>}></Route>
+</Routes>
+);
 }
-
 export default App;
