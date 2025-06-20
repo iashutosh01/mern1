@@ -1,15 +1,18 @@
 import { Link } from "react-router-dom";
 
 function Header() {
- return (
- <>
+  return (
+    <>
+      <div className="container-fluid text-center mt-3">
+        <Link to="/" style={{ marginRight: "20px", textDecoration: "none" }}>
+          Home
+        </Link>
+        <Link to="/login" style={{ textDecoration: "none" }}>
+          Login
+        </Link>
+      </div>
+    </>
+  );
+}
 
-<div className="container-fluid textcenter">
-
- <Link to="/">Home</Link>
- <Link to="/login">Login</Link>
- </div>
- </>
- );
- }
 export default Header;

@@ -1,47 +1,91 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+function Login({ updateUserDetails }) {
+  const [formData, setFormData] = useState({
+    username: '',
+    password: ''
+  });
 
-function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState('');
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (username === "admin1" && password === "admin") {
-      alert("Login successful!");
-      navigate("/Dash");
+  const handleChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const validate = () => {
+    let isValid = true;
+    if (!formData.username || !formData.password) {
+      setMessage("Username and Password are required.");
+      isValid = false;
     } else {
-      alert("Invalid credentials! Try Again...");
+      setMessage('');
+    }
+    return isValid;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (validate()) {
+      const body = {
+        username: formData.username,
+        password: formData.password
+      };
+
+      const config = {
+        withCredentials: true // sends cookies for authentication if needed
+      };
+
+      try {
+        const response = await axios.post(
+          'http://localhost:5002/auth/login',
+          body,
+          config
+        );
+
+        updateUserDetails(response.data.user);
+        navigate("/dashboard"); // Redirect to dashboard after login
+      } catch (error) {
+        console.error(error);
+        setErrors({ message: "Invalid credentials or server error." });
+      }
     }
   };
 
   return (
-    <div>
+    <div className="container text-center mt-4">
+      {message && <p className="text-danger">{message}</p>}
+      {errors.message && <p className="text-danger">{errors.message}</p>}
       <h1>Login Page</h1>
-      <form onSubmit={handleLogin}>
-        <div>
-          <label>Username:</label>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
           <input
             type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
+            name="username"
+            placeholder="Username"
+            className="form-control"
+            value={formData.username}
+            onChange={handleChange}
           />
         </div>
-
-        <div>
-          <label>Password:</label>
+        <div className="mb-3">
           <input
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
+            name="password"
+            placeholder="Password"
+            className="form-control"
+            value={formData.password}
+            onChange={handleChange}
           />
         </div>
-
-        <button type="submit">Login</button>
+        <button type="submit" className="btn btn-primary">Login</button>
       </form>
     </div>
   );
