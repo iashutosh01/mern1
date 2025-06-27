@@ -1,45 +1,59 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Register from "./Register"; // 👈 import this
+
 
 import Home from "./Home";
 import Login from "./Login";
 import AppLayout from "./layout/AppLayout";
-import Dashboard from "./pages/Dashboard";  
+import DashBoard from "./pages/DashBoard";
 
 function App() {
   const [userDetails, setUserDetails] = useState(null);
+  const navigate = useNavigate();
 
   const updateUserDetails = (user) => {
     setUserDetails(user);
     localStorage.setItem("userDetails", JSON.stringify(user));
   };
 
-  useEffect(() => {
-  const isUserLoggedIn = async () => {
+  const logout = async () => {
     try {
-      const response = await axios.post(
-        'http://localhost:5002/auth/is-user-logged-in',
-        {},
-        { withCredentials: true }
-      );
-      if (response.data && response.data.user) {
-        updateUserDetails(response.data.user);
-      }
+      await axios.post("http://localhost:5002/auth/logout", {}, { withCredentials: true });
     } catch (error) {
-      console.log("Session check failed:", error.message);
+      console.error("Logout failed:", error);
+    } finally {
+      setUserDetails(null);
       localStorage.removeItem("userDetails");
+      navigate("/login");
     }
   };
 
-  const storedUser = localStorage.getItem("userDetails");
-  if (storedUser) {
-    setUserDetails(JSON.parse(storedUser));
-  } else {
-    isUserLoggedIn();
-  }
-}, []);
+  useEffect(() => {
+    const isUserLoggedIn = async () => {
+      try {
+        const response = await axios.post(
+          "http://localhost:5002/auth/is-user-logged-in",
+          {},
+          { withCredentials: true }
+        );
+        if (response.data && response.data.user) {
+          updateUserDetails(response.data.user);
+        }
+      } catch (error) {
+        console.log("Session check failed:", error.message);
+        localStorage.removeItem("userDetails");
+      }
+    };
 
+    const storedUser = localStorage.getItem("userDetails");
+    if (storedUser) {
+      setUserDetails(JSON.parse(storedUser));
+    } else {
+      isUserLoggedIn();
+    }
+  }, []);
 
   return (
     <Routes>
@@ -70,11 +84,19 @@ function App() {
       <Route
         path="/dashboard"
         element={
-          userDetails ? <Dashboard /> : <Navigate to="/login" />
+          userDetails ? (
+            <DashBoard logout={logout} user={userDetails} />
+          ) : (
+            <Navigate to="/login" />
+          )
         }
       />
+      <Route path="/register" element={<AppLayout><Register /></AppLayout>} />
+
     </Routes>
   );
 }
 
 export default App;
+
+
